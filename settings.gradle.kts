@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "OpenWeather"
 include(":app")
+include(":network")
