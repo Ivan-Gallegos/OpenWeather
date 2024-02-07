@@ -20,6 +20,10 @@ class MainViewModel : ViewModel() {
         _state.value = state.value.copy(searchQuery = query)
     }
 
+    fun updateWeatherResponse(weather: WeatherResponse) {
+        _state.value = state.value.copy(weather = weather)
+    }
+
     fun getGeoCode(query: String, limit: Int) = viewModelScope.launch {
         Repo.getGeoCode(query, limit).run {
             if (isSuccessful) {

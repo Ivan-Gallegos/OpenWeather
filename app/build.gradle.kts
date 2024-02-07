@@ -71,5 +71,7 @@ dependencies {
     implementation(project(":network"))
     //Coil Compose
     implementation("io.coil-kt:coil-compose:2.5.0")
+    //DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
 }

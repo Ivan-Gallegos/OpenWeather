@@ -12,15 +12,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.network.model.weather.WeatherResponse
 import com.example.openweather.ui.SearchBar
 import com.example.openweather.ui.WeatherResults
 import com.example.openweather.ui.theme.OpenWeatherTheme
+import kotlinx.coroutines.flow.firstOrNull
 
 class MainActivity : ComponentActivity() {
 
@@ -36,10 +39,22 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
+                    LoadLastWeather()
                     MainColumn(state)
+                    UpdateLastWeather(state)
                 }
             }
         }
+    }
+
+    @Composable
+    private fun LoadLastWeather() = LaunchedEffect(Unit) {
+        vm.updateWeatherResponse(dataStore.lastWeather.firstOrNull() ?: WeatherResponse())
+    }
+
+    @Composable
+    private fun UpdateLastWeather(state: MainState) = LaunchedEffect(state.weather) {
+        dataStore.updateLastWeather(state.weather)
     }
 
     @Composable
