@@ -11,10 +11,18 @@ interface OpenWeatherService {
     companion object {
         const val BASE_URL = "https://api.openweathermap.org/"
     }
+
     @GET("geo/1.0/direct")
-    suspend fun getGeoCode(@Query("q") query: String): Response<List<GeoCode>>
+    suspend fun getGeoCode(
+        @Query("q") query: String,
+        @Query("limit") limit: Int
+    ): Response<List<GeoCode>>
 
     @GET("data/2.5/weather")
-    suspend fun getWeather(@Query("lat") lat: Float, @Query("lon") lon: Float): Response<WeatherResponse>
+    suspend fun getWeather(
+        @Query("lat") lat: Double,
+        @Query("lon") lon: Double,
+        @Query("units") units: String,
+    ): Response<WeatherResponse>
 
 }

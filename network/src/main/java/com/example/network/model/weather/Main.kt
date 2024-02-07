@@ -16,4 +16,6 @@ data class Main(
     val tempMax: Double = 0.0,
     @SerializedName("temp_min")
     val tempMin: Double = 0.0
-)
+) {
+    val pressureInHg get() = pressure / 33.863886666667
+}

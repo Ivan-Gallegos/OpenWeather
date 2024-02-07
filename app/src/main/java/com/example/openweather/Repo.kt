@@ -29,8 +29,9 @@ object Repo {
     // Instantiate service using Retrofit
     private val openWeatherService = retrofit.create<OpenWeatherService>()
 
-    suspend fun getGeoCode(query: String) = openWeatherService.getGeoCode(query)
+    suspend fun getGeoCode(query: String, limit: Int) = openWeatherService.getGeoCode(query, limit)
 
-    suspend fun getWeather(lat: Float, lon: Float) = openWeatherService.getWeather(lat, lon)
+    suspend fun getWeather(lat: Double, lon: Double, units: String) =
+        openWeatherService.getWeather(lat, lon, units)
 
 }

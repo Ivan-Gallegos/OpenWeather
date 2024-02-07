@@ -69,4 +69,7 @@ dependencies {
 
     //Network
     implementation(project(":network"))
+    //Coil Compose
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
 }
