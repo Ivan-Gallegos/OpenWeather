@@ -1,8 +1,15 @@
 package com.example.openweather
 
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Looper
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,11 +26,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import com.example.network.model.weather.WeatherResponse
 import com.example.openweather.ui.SearchBar
 import com.example.openweather.ui.WeatherResults
 import com.example.openweather.ui.theme.OpenWeatherTheme
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import kotlinx.coroutines.flow.firstOrNull
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
 
@@ -32,6 +47,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val state by vm.state
+        val fusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(this@MainActivity)
 
         setContent {
             OpenWeatherTheme {
@@ -39,6 +56,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
+                    LocationEffect(fusedLocationProviderClient)
                     LoadLastWeather()
                     MainColumn(state)
                     UpdateLastWeather(state)
@@ -73,11 +91,58 @@ class MainActivity : ComponentActivity() {
             },
             onDismissRequest = { expanded = false },
             onItemClick = {
-                vm.getWeather(it.lat, it.lon, "imperial")
+                vm.getWeather(it.lat, it.lon)
                 expanded = false
             },
         )
         Spacer(modifier = Modifier.height(16.dp))
         WeatherResults(state.weather)
     }
+
+    @SuppressLint("MissingPermission")
+    @Composable
+    private fun LocationEffect(fusedLocationProviderClient: FusedLocationProviderClient) {
+        var permissionsGranted by remember { mutableStateOf(areLocationPermissionsGranted()) }
+        val locationPermissions = arrayOf(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION)
+
+        val locationPermissionLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestMultiplePermissions(),
+            onResult = { permissions ->
+                permissionsGranted = permissions.values.reduce { acc, isPermissionGranted ->
+                    acc || isPermissionGranted
+                }
+            },
+        )
+        LaunchedEffect(permissionsGranted) {
+            if (areLocationPermissionsGranted()) {
+                val locationRequest = LocationRequest.Builder(
+                    Priority.PRIORITY_HIGH_ACCURACY,
+                    TimeUnit.SECONDS.toMillis(1),
+                )
+                    .setMinUpdateIntervalMillis(0)
+                    .setMaxUpdates(1)
+                    .build()
+
+                fusedLocationProviderClient.requestLocationUpdates(
+                    locationRequest,
+                    object : LocationCallback() {
+                        override fun onLocationResult(it: LocationResult) {
+                            super.onLocationResult(it)
+                            val location = it.locations.last()
+                            vm.getWeather(location.latitude, location.longitude)
+                        }
+                    },
+                    Looper.getMainLooper(),
+                )
+            } else {
+                locationPermissionLauncher.launch(locationPermissions)
+            }
+        }
+    }
+
+    private fun areLocationPermissionsGranted(): Boolean = ActivityCompat.checkSelfPermission(
+        this@MainActivity, ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+        this@MainActivity, ACCESS_COARSE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
 }

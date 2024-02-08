@@ -39,7 +39,7 @@ class MainViewModel : ViewModel() {
     }
 
 
-    fun getWeather(lat: Double, lon: Double, units: String) {
+    fun getWeather(lat: Double, lon: Double, units: String = "Imperial") {
         viewModelScope.launch {
             Repo.getWeather(lat, lon, units).run {
                 if (isSuccessful) {

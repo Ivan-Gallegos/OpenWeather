@@ -8,6 +8,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.PopupProperties
 import com.example.network.model.geo.GeoCode
 import com.example.openweather.MainState
@@ -26,6 +27,7 @@ fun SearchBar(
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            placeholder = { Text(text = "City", color = Color.Gray) }
         )
         DropdownMenu(
             expanded = expanded,
